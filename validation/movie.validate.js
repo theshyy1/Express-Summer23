@@ -1,32 +1,21 @@
+const Joi = require('joi');
+
+const schema = Joi.object({
+    title: Joi.string().trim().required(),
+    year: Joi.number().integer().required(),
+    cast: Joi.array().items(Joi.string().required()).required(),
+    genres: Joi.array().items(Joi.string().required()).required(),
+    href: Joi.string().required(),
+    extract: Joi.string().required(),
+    thumbnail: Joi.string().required(),
+});
+
 module.exports.movieValidate = (req, res, next) => {
-    let errors = [];
+    const { error } = schema.validate(req.body);
 
-    if(!req.body.title) {
-        errors.push('Title is required');
-    }
-
-    if(!req.body.year) {
-        errors.push('Year is required');
-    }
-    if(!req.body.cast) {
-        errors.push('Cast is required');
-    }
-    if(!req.body.genres) {
-        errors.push('Genres is required');
-    }
-
-    if(!req.body.href) {
-        errors.push('Href is required');
-    }
-    
-    if(!req.body.extract) {
-        errors.push('Extract is required');
-    }
-
-    if(errors.length > 0) {
-        return res.status(400).json({
-            msg: errors
-        });
+    if(error) {
+        res.status(400).json({msg: error.message });
+        return;
     }
 
     next();

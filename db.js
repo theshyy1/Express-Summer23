@@ -61,7 +61,7 @@ const movies = [
     {
         "id": 4,
         "title": "Three Christs",
-        "year": 2020,
+        "year": 2021,
         "cast": [
             "Richard Gere",
             "Peter Dinklage",

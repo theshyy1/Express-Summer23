@@ -1,12 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
+const mongoose = require("mongoose");
 const port = process.env.PORT || 8000;
 
 const moviesRoute = require("./routes/movies.route");
 const castsRoute = require("./routes/casts.route");
 const genresRoute = require("./routes/genres.route");
 const uploadRoute = require("./routes/uploads.route");
+const authRoute = require("./routes/auth.route");
+
+mongoose.connect("mongodb://127.0.0.1:27017/su23").then(() => console.log("Connected successfully"))
 
 app.use(express.static("public"));
 
@@ -20,6 +24,7 @@ app.get('/', (req, res) => {
 app.use("/movies", moviesRoute);
 app.use("/casts", castsRoute);
 app.use("/genres", genresRoute);
+app.use("/auth", authRoute);
 app.use("/uploads", uploadRoute);
 
 app.listen(port, () => {

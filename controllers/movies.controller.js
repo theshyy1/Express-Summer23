@@ -1,68 +1,67 @@
-const {movies} = require("../db");
-
+const { Movies, Casts } = require("../models/model")
+ 
 const moviesController = {
-    addMovie: (req, res) => {
-        try {
-            req.body.id = Date.now();
-            const newMovie = req.body;
-            movies.push(newMovie);
+    addMovie: async (req, res) => {
+        try {  
+            const movieExist = await Movies.findOne({ title: req.body.title});
+
+            if(movieExist) {
+                res.status(400).json({ msg: "Movie already exists"});
+                return;
+            }
+
+            const newMovie = await Movies.create(req.body);
+            // if(req.body.cast) {
+            //     for(str of req.body.cast) {
+            //         const cast = await Casts.findByIdAndUpdate(str, { $addToSet: { films: newMovie._id }})
+            //     }
+            // }
+            if(req.body.cast) {
+                await Casts.updateMany({ _id: req.body.cast}, { $addToSet: { films: newMovie._id }});
+            }
             res.status(200).json({msg: "Added movies successfully"});
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    getAllMovies: (req, res) => {
+    getAllMovies: async (req, res) => {
         try {
-            if(!movies) {
-                res.status(404).json({msg: "All movies not found"});
-                return;
-            }
-            res.status(200).json(movies);
+            const allMovies = await Movies.find(); //filter, projection, option?
+            res.status(200).json(allMovies);
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    getAMovie: (req, res) => {
+    getAMovie: async (req, res) => {
         try {
-            const id = parseInt(req.params.id);
-            const user = movies.find(item => item.id === id);
-            if(!user) {
-                res.status(404).json({msg: "Not found movie"});
+            const movie = await Movies.findOne({ _id: req.params.id}).populate("cast");
+            if(!movie) {
+                res.status(500).json({msg: "Not found movie"});
                 return;
             }
-            res.status(200).json(user);
+            res.status(200).json(movie);
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    updateMovie: (req, res) => {
+    updateMovie: async (req, res) => {
         try {
-            const id = parseInt(req.params.id);
-            req.body.id = id;
-            const newMovie = req.body;
-            const userUpdated = movies.findIndex(item => item.id === id);
-            if(userUpdated === -1) {
-                res.status(404).json({msg: "The movie update is not found"});
-                return;
-            }
-            movies.splice(userUpdated, 1, newMovie);
-            
+            const updatedMovie = await Movies.findOneAndUpdate({ _id: req.params.id}, { $set: req.body }); // req.body
             res.status(200).json({msg: "Updated successfully"});
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    deleteMovie: (req, res) => {
+    deleteMovie: async (req, res) => {
         try {
-            const id = parseInt(req.params.id);
-            const deletedMovie = movies.findIndex(item => item.id === id);
-            if(deletedMovie === -1) {
-                res.status(404).json({msg: "The movie delete is not found"});
-                return;
+            await Casts.updateMany({ films: req.params.id}, { $pull: { films: req.params.id }});
+            const deletedMovie = await Movies.findByIdAndDelete(req.params.id);
+
+            if(deletedMovie) {
+                res.status(200).json({msg: "Deleted successfully"});
+            }else {
+                res.status(400).json({msg: "Movie not exists"});
             }
-            movies.splice(deletedMovie, 1);
-            
-            res.status(200).json({msg: "Deleted successfully"});
         } catch (error) {
             res.status(500).json(error);
         }

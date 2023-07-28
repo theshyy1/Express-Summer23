@@ -1,69 +1,55 @@
-const { casts} = require("../db");
+// const { casts} = require("../db");
+const { Casts, Movies } = require("../models/model")
 
 const castController = {
-    getAllCasts: (req, res) => {
+    getAllCasts: async (req, res) => {
         try {
-            if(!casts) {
-                res.status(404).json({message: "No casts found"});
-            }
-            res.status(200).json(casts);
+            const allCasts = await Casts.find();
+            res.status(200).json(allCasts);
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    addCast: (req, res) => {
+    addCast: async (req, res) => {
         try {
-            req.body.id = Date.now();
-            const newCast = req.body;
-            casts.push(newCast);
-            res.status(200).json({ msg: "Added cast successfully"});
-        } catch (error) {
-            res.status(500).json(error);
-        }
-    },
-    getACast: (req, res) => {
-        try {
-            const id = parseInt(req.params.id);
-            const cast = casts.find(cast => cast.id === id);
-            if(!cast) {
-                res.status(404).json({message: "This cast is not found"});
+            const existCast = await Casts.findOne({ name: req.body.name});
+
+            if(existCast) {
+                res.status(400).json({msg: "Cast already exists"});
                 return;
             }
+            const newCast = await Casts.create(req.body);
+            res.status(200).json(newCast);
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
+    getACast: async (req, res) => {
+        try {
+            const cast = await Casts.findById(req.params.id).populate("films");
             res.status(200).json(cast);
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    updateCast: (req, res) => {
+    updateCast: async (req, res) => {
         try {
-            const id = parseInt(req.params.id);
-            req.body.id = id;
-            const newCast = req.body;
-            const cast = casts.findIndex(cast => cast.id === id);
-
-            if(cast === -1) {
-                res.status(404).json({message: "This cast is not found"});
-                return;
-            }
-            
-            casts.splice(cast, 1, newCast);
+            const updateCast = await Casts.findByIdAndUpdate(req.params.id, req.body);
             res.status(200).json({ msg: "Updated successfully"});
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    deleteCast: (req, res) => {
+    deleteCast: async (req, res) => {
         try {
-            const id = parseInt(req.params.id);
-            const cast = casts.findIndex(cast => cast.id === id);
-
-            if(cast === -1) {
-                res.status(404).json({message: "This cast is not found"});
-                return;
+            await Movies.updateMany({ cast: req.params.id }, { $pull: { cast: req.params.id }});
+            const deleteCast = await Casts.findByIdAndDelete(req.params.id);
+            
+            if(deleteCast) {
+                res.status(200).json({ msg: "Deleted successfully"});
+            }else {
+                res.status(404).json({ msg: "Cast not exist"});
             }
-
-            casts.splice(cast, 1);
-            res.status(200).json({ msg: "Deleted successfully"});
         } catch (error) {
             res.status(500).json(error);
         }
