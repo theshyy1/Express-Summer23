@@ -29,11 +29,14 @@ const moviesController = {
     search: async (req, res) => {
         try {
             const { q } = req.query;
+            
+            // await Movies.createIndexes({ "title": "text"}); // db.movies.createIndex({"title": "text"}); tao index trc khi searcb
 
-            const allMovies = await Movies.find();
-            const searchedMovies = allMovies.filter(mov => {
-                return mov.title.toLowerCase().indexOf(q.toLowerCase().trim()) !== -1
-            });
+            // const allMovies = await Movies.find();
+            // const searchedMovies = allMovies.filter(mov => {
+            //     return mov.title.toLowerCase().indexOf(q.toLowerCase().trim()) !== -1
+            // });             
+            const searchedMovies = await Movies.find({ $text: { $search: q}});
 
             res.status(200).json(searchedMovies);
         } catch (error) {
