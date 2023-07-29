@@ -1,4 +1,5 @@
-const { Movies, Casts } = require("../models/model")
+const { Movies, Casts } = require("../models/model");
+const { move } = require("../routes/movies.route");
  
 const moviesController = {
     addMovie: async (req, res) => {
@@ -20,6 +21,21 @@ const moviesController = {
                 await Casts.updateMany({ _id: req.body.cast}, { $addToSet: { films: newMovie._id }});
             }
             res.status(200).json({msg: "Added movies successfully"});
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
+
+    search: async (req, res) => {
+        try {
+            const { q } = req.query;
+
+            const allMovies = await Movies.find();
+            const searchedMovies = allMovies.filter(mov => {
+                return mov.title.toLowerCase().indexOf(q.toLowerCase().trim()) !== -1
+            });
+
+            res.status(200).json(searchedMovies);
         } catch (error) {
             res.status(500).json(error);
         }

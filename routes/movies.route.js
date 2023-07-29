@@ -7,6 +7,8 @@ router.get("/", moviesController.getAllMovies);
 
 router.post("/create", validate.movieValidate, moviesController.addMovie);
 
+router.get("/search", moviesController.search);
+
 router.get("/:id", moviesController.getAMovie);
 
 router.put("/:id", validate.movieValidate, moviesController.updateMovie);
