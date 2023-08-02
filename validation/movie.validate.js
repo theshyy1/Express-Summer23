@@ -4,7 +4,7 @@ const schema = Joi.object({
     title: Joi.string().trim().required(),
     year: Joi.number().integer().required(),
     cast: Joi.array().items(Joi.string().required()).required(),
-    genres: Joi.array().items(Joi.string().required()).required(),
+    genres: Joi.string().required(),
     href: Joi.string().required(),
     extract: Joi.string().required(),
     thumbnail: Joi.string().required(),

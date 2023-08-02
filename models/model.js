@@ -12,7 +12,10 @@ const MoviesSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'casts'
     }],
-    genres: [String],
+    genres: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "genres"
+    },
     extract: {
         type: String
     },
@@ -24,6 +27,18 @@ const MoviesSchema = new mongoose.Schema({
     }
     
 })
+
+const GenresSchema = {
+    name: {
+        type: String,
+        required: true
+    },
+    films: [
+        { 
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "movies"
+        }]
+}
 
 const CastSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -57,12 +72,17 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 8
+    },
+    admin: {
+        type: Boolean,
+        default: false,
     }
 });
 
 const Movies = mongoose.model("movies", MoviesSchema);
 const Casts = mongoose.model("casts", CastSchema);
+const Genres = mongoose.model("genres", GenresSchema);
 const Users = mongoose.model("users", UserSchema);
 
 
-module.exports = { Movies, Casts , Users};
+module.exports = { Movies, Casts , Genres, Users};

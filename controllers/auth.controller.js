@@ -37,17 +37,21 @@ const AuthController = {
                 return;
             }
 
-            const accessToken = jwt.sign({
-                id: user.id
-            },
-                "myaccesstoken",
-                { expiresIn: "1m" } 
-            )
+            if(user && match) {
+                const accessToken = jwt.sign({
+                    id: user.id,
+                    admin: user.admin
+                },
+                    process.env.ACCESS_KEY,
+                    { expiresIn: "1d" } 
+                )
 
-            res.cookie("token-cookie", accessToken);
+                const { password, ...others} = user._doc;
 
+                res.cookie("token-cookie", accessToken);
+                res.status(200).json({msg: "Login successful", user: others, accessToken: accessToken});
+            }
             // res.cookie("userID", user._id);
-            res.status(200).json({msg: "Login successful", accessToken: accessToken});
         } catch (error) {
             res.status(500).json(error);
         }

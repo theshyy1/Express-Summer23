@@ -7,6 +7,8 @@ router.get("/", castController.getAllCasts);
 
 router.post("/create", validate.castValidate, castController.addCast);
 
+router.get("/search", castController.search);
+
 router.get("/:id", castController.getACast);
 
 router.put("/:id", castController.updateCast);

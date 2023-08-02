@@ -20,7 +20,8 @@ const AuthSchema = Joi.object({
     confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
         "any.only": "Confirmpassword does not match with password",
         "string.empty": "Confirm password is required"
-    })
+    }),
+    admin: Joi.bool()
 })
 
 module.exports.authValidate = (req, res, next) => {

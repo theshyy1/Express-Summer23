@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const app = express();
 const mongoose = require("mongoose");
+const dotenv = require("dotenv").config();
 const port = process.env.PORT || 8000;
 
 const moviesRoute = require("./routes/movies.route");
@@ -13,7 +14,7 @@ const authRoute = require("./routes/auth.route");
 
 const authMiddleware = require("./middleware/auth.middleware");
 
-mongoose.connect("mongodb://127.0.0.1:27017/su23").then(() => console.log("Connected successfully"))
+mongoose.connect(process.env.MONGO_URL).then(() => console.log("Connected to MongoDBLocal successfully"))
 
 app.use(express.static("public"));
 

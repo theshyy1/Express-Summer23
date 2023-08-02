@@ -1,4 +1,4 @@
-const { Movies, Casts } = require("../models/model");
+const { Movies, Casts, Genres } = require("../models/model");
  
 const moviesController = {
     addMovie: async (req, res) => {
@@ -19,12 +19,15 @@ const moviesController = {
             if(req.body.cast) {
                 await Casts.updateMany({ _id: req.body.cast}, { $addToSet: { films: newMovie._id }});
             }
+
+            if(req.body.genres) {
+                await Genres.updateMany({ _id: req.body.genres}, { $addToSet: { films: newMovie._id }});
+            }
             res.status(200).json({msg: "Added movies successfully"});
         } catch (error) {
             res.status(500).json(error);
         }
     },
-
     search: async (req, res) => {
         try {
             const { search_query } = req.query;
@@ -50,7 +53,7 @@ const moviesController = {
     },
     getAMovie: async (req, res) => {
         try {
-            const movie = await Movies.findOne({ _id: req.params.id}).populate("cast");
+            const movie = await Movies.findOne({ _id: req.params.id}).populate("cast genres");
             if(!movie) {
                 res.status(500).json({msg: "Not found movie"});
                 return;

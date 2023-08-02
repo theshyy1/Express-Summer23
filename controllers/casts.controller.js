@@ -24,9 +24,22 @@ const castController = {
             res.status(500).json(error);
         }
     },
+    // FUll text search
+    search: async (req, res) => {
+        try {
+            const { query_search} = req.query;
+            console.log(query_search);
+            await Casts.createIndexes({"name": "text"});
+
+            const matchedCasts = await Casts.find({$text: {$search: query_search}});
+            res.status(200).json(matchedCasts);
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
     getACast: async (req, res) => {
         try {
-            const cast = await Casts.findById(req.params.id).populate("films");
+            const cast = await Casts.findById(req.params.id).populate("films", "title year genres cast");
             res.status(200).json(cast);
         } catch (error) {
             res.status(500).json(error);

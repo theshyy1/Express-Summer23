@@ -1,72 +1,58 @@
-const { genres } = require("../db");
+// const { genres } = require("../db");
+const { Genres, Movies } = require("../models/model");
 
 const castController = {
-    getAllGenres: (req, res) => {
+    getAllGenres: async (req, res) => {
         try {
-            if(!genres) {
-                res.status(404).json({errors: "No genres found"});
-            }
-            res.status(200).json(genres);
+            const allGenres = await Genres.find();
+            res.status(200).json(allGenres);
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    addGenres: (req, res) => {
+    addGenres: async (req, res) => {
         try {
-            req.body.id = Date.now();
-            const newGenres = req.body;
+            const existGenres = await Genres.findOne({ name: req.body.name});
 
-            const nameGen = genres.find(g => g.name === newGenres.name);
-
-            if(nameGen) {
-                res.status(404).json({errors: "This genres is already exists"});
+            if(existGenres) {
+                res.status(401).json({msg: "Genres already exists"});
                 return;
             }
-
-            genres.push(newGenres);
-            res.status(200).json({msg: "Added genres successfully"});
+            const newGenres = await Genres.create(req.body);
+            
+            res.status(200).json({msg: "Added genres successfully", genres: newGenres});
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    getAGenres: (req, res) => {
+    getAGenres:  async (req, res) => {
         try {
-            const id = parseInt(req.params.id);
-            const gen = genres.find(g => g.id === id);
-            if(!gen) {
-                res.status(404).json({ errors: "This gen is not found"});
-            }
-
-            res.status(200).json(gen);
+            const genr = await Genres.findById(req.params.id).populate("films", "title cast year");
+            res.status(200).json(genr);
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    updateGenres: (req, res) => {
+    updateGenres: async (req, res) => {
         try {
-            const id = parseInt(req.params.id);
-            req.body.id = id;
-            const newGenres = req.body;
-            const gen = genres.findIndex(g => g.id === id);
+            const genUpdated = await Genres.findByIdAndUpdate(req.params.id, req.body);
 
-            if(gen === -1) {
-                res.status(404).json({ errors: "This gen is not found"});
-            }
-            genres.splice(gen, 1, newGenres);
-            res.status(200).json({ msg: "Updated successfully"});
+            res.status(200).json({ msg: "Updated successfully", gen: genUpdated});
         } catch (error) {
             res.status(500).json(error);
         }
     },
-    deleteGenres: (req, res) => {
+    deleteGenres: async (req, res) => {
         try {
-            const id = parseInt(req.params.id);
-            const gen = genres.findIndex(g => g.id === id);
-            if(gen === -1) {
-                res.status(404).json({ errors: "This gen is not found"});
+            await Movies.updateMany({ genres: req.params.id}, { $set: {genres: null}});
+            const genDeleted = await Genres.findByIdAndDelete(req.params.id);
+            
+            if(genDeleted) {
+                res.status(200).json({ msg: "Deleted successfully", gen: genDeleted});
+            } else {
+                res.status(500).json({ msg: "Genr not exits"});
+                return;
             }
-            genres.splice(gen, 1);
-            res.status(200).json({ msg: "Deleted successfully"});
         } catch (error) {
             res.status(500).json(error);
         }
