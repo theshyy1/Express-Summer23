@@ -2,8 +2,10 @@ const router = require('express').Router();
 
 const moviesController = require('../controllers/movies.controller');
 const validate = require("../validation/movie.validate");
+const authMid = require("../middleware/auth.middleware");
 
-router.get("/", moviesController.getAllMovies);
+
+router.get("/", authMid.authMiddleware, moviesController.getAllMovies);
 
 router.post("/create", validate.movieValidate, moviesController.addMovie);
 
